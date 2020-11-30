@@ -1,6 +1,7 @@
 #include<iostream>
 #include<string>
 #include<math.h>
+#include<charconv>
 #define PI 3.141592653589793
 using namespace std;
 
@@ -8,6 +9,8 @@ using namespace std;
 class Bitmap {
 	Channel R, G, B, A, Y, Cb, Cr;
 };
+
+
 
 class Channel {
 	int resolution[2] = {128,128};
@@ -27,6 +30,26 @@ public:
 	T pixelValues[8][8];
 	Chunk(T values[8][8]) {
 		pixelValues = values;
+	}
+
+	T getNthValue(int n) {
+		if (n >= 64) {
+			n = 64;
+		}
+		if (n < 0) {
+			n = 0;
+		}
+		return pixelValues[(int)(n/8)][8 % n];
+	}
+
+	void setNthValue(int n, T value) {
+		if (n >= 64) {
+			n = 64;
+		}
+		if (n < 0) {
+			n = 0;
+		}
+		pixelValues[(int)(n / 8)][8 % n] = value;
 	}
 
 	Chunk() {
@@ -197,21 +220,32 @@ public:
 		return Chunk<int>(iresult);
 	}
 
-	string ConvertToBinString(Chunk<int> compressed) {
+	Chunk<char> ConvertToBinString(Chunk<int> compressed) {
 		int intString[64];
+		Chunk<char> result = Chunk<char>();
 
-
-		for (int i1 = 0; i1 < 64; i1++) {
-			for (int i2 = 0; i2 < 64; i2++) {
+		for (int i1 = 0; i1 < 8; i1++) {
+			for (int i2 = 0; i2 < 8; i2++) {
 				intString[entropyEncodingTable[i1][i2]] = compressed.pixelValues[i1][i2];
 			}
 		}
 
+		for (int i = 0; i < 64; i++) {
+			result.setNthValue(i, intString[i]);
+		}
+
 		//Translate this to a string somehow
-		return "abcde";
+		return result;
 	}
 
 
+};
+
+
+static class baseFunctions {
+	void writeJPGFile() {
+
+	}
 };
 
 
