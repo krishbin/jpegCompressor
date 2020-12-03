@@ -92,24 +92,12 @@ class bitmap {
     file.close();
   };
 
-  void Allocate(UINT Width, UINT Height){};
+  void Allocate(UINT Width, UINT Height){
+
+  };
 };
 
 class color {};
-
-class RGBcolor : public color {
- private:
-  uint8_t red;
-  uint8_t green;
-  uint8_t blue;
-
- public:
-  RGBcolor();
-  RGBcolor(uint8_t, uint8_t, uint8_t);
-  uint8_t getRed() const{return red;};
-  uint8_t getGreen() const{return green;};
-  uint8_t getBlue() const{return blue;};
-};
 
 class YCbCrcolor : public color {
  private:
@@ -120,12 +108,22 @@ class YCbCrcolor : public color {
  public:
   YCbCrcolor();
   YCbCrcolor(uint8_t Y, uint8_t Cb, uint8_t Cr);
-  YCbCrcolor(const RGBcolor& rgb);
-  operator RGBcolor() {
-    float _red = Y + 1.402*Cr;
-    float _green = Y - 0.34414*(Cb - 2^(4)) - 0.71313*(Cr - 2^(4));
-    float _blue = Y + 1.722*(Cb - 2^(4));
-    return RGBcolor(uint8_t(_red),uint8_t(_green),uint8_t(_blue));
+};
+
+class RGBcolor : public color {
+ private:
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+
+ public:
+  RGBcolor();
+  RGBcolor(uint8_t, uint8_t, uint8_t);
+  operator YCbCrcolor(){
+    float _Y = 0.299*red + 0.587*green + 0.114*blue;
+    float _Cb = -0.1687*red - 0.3313*green + 0.5*blue + 16;
+    float _Cr = 0.5*red - 0.4187*green - 0.0813*blue + 16;
+    return YCbCrcolor(uint8_t(_Y),uint8_t(_Cb),uint8_t(_Cr));
   };
 };
 
@@ -141,10 +139,4 @@ YCbCrcolor::YCbCrcolor(uint8_t Y, uint8_t Cb, uint8_t Cr){
   this->Y = Y;
   this->Cb = Cb;
   this->Cr = Cr;
-};
-
-YCbCrcolor::YCbCrcolor(const RGBcolor& rgb){
-  Y = rgb.getRed();
-  Cb = rgb.getBlue();
-  Cr = rgb.getGreen();
 };
