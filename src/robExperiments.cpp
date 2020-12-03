@@ -1,4 +1,7 @@
+
 #include<iostream>
+#include<Chunk.h>
+#include<ChunkTransformer.h>
 #include<string>
 #include<math.h>
 #include<charconv>
@@ -8,7 +11,7 @@ using namespace std;
 
 
 class Bitmap {
-	Channel R, G, B, A, Y, Cb, Cr;
+	//Channel R, G, B, A, Y, Cb, Cr;
 };
 
 
@@ -22,7 +25,7 @@ public:
 		//Extract info from bitmap and save it here
 	}
 };
-
+/*
 template<class T>
 class Chunk {
 	
@@ -46,6 +49,16 @@ public:
 		return pixelValues[(int)(n/8)][8 % n];
 	}
 
+	T getZigZagNthValue(int n) {
+		if (n >= 64) {
+			n = 64;
+		}
+		if (n < 0) {
+			n = 0;
+		}
+		return pixelValues[(int)(n / 8)][8 % n];
+	}
+
 	void setNthValue(int n, T value) {
 		if (n >= 64) {
 			n = 64;
@@ -65,22 +78,6 @@ public:
 };
 
 
-class HuffmanTable {
-public:
-	bool AC = true;
-	int length;
-	int CodeCounts[16];
-	string CodeValues;
-
-	HuffmanTable(bool _AC, int _length, int ccounts[16], string cvalues) {
-		length = _length;
-		AC = _AC;
-		for(int i = 0; i < 16; i++)
-			CodeCounts[i] = ccounts[i];
-
-		CodeValues = cvalues;
-	}
-};
 
 static class ChunkTransformer {
 private:
@@ -106,16 +103,7 @@ private:
 		{99,99,99,99,99,99,99,99}
 	};
 
-	int entropyEncodingTable[8][8] = {
-		{0,1,5,6,14,15,27,28},
-		{2,4,7,13,16,26,29,42},
-		{3,8,12,17,25,30,41,43},
-		{9,11,18,24,31,40,44,53},
-		{10,19,23,32,39,45,52,54},
-		{20,22,33,38,46,51,55,60},
-		{21,34,37,47,50,56,59,61},
-		{35,36,48,49,57,58,62,63}
-	};
+
 
 	float alpha(int u) {
 		if (u = 0) {
@@ -126,6 +114,17 @@ private:
 		}
 	}
 public:
+	static constexpr int entropyEncodingTable[8][8] = {
+	{0,1,5,6,14,15,27,28},
+	{2,4,7,13,16,26,29,42},
+	{3,8,12,17,25,30,41,43},
+	{9,11,18,24,31,40,44,53},
+	{10,19,23,32,39,45,52,54},
+	{20,22,33,38,46,51,55,60},
+	{21,34,37,47,50,56,59,61},
+	{35,36,48,49,57,58,62,63}
+	};
+
 	Chunk<int> YquantizationTable = Chunk<int>(YquantizationTableValues50);
 	Chunk<int> CquantizationTable = Chunk<int>(CquantizationTableValues50);
 
@@ -264,7 +263,26 @@ public:
 
 };
 
+
+*/
 ChunkTransformer chunkTransformer;
+
+class HuffmanTable {
+public:
+	bool AC = true;
+	int length;
+	int CodeCounts[16];
+	string CodeValues;
+
+	HuffmanTable(bool _AC, int _length, int ccounts[16], string cvalues) {
+		length = _length;
+		AC = _AC;
+		for (int i = 0; i < 16; i++)
+			CodeCounts[i] = ccounts[i];
+
+		CodeValues = cvalues;
+	}
+};
 
 
 static class baseFunctions {
@@ -368,7 +386,10 @@ static class baseFunctions {
 		//Header
 		result += combineHexChars({ 0xff,0xc0, 0x0, 0x11, 0x8 });
 		PairOf<PairOf<char>> res = PairOf<PairOf<char>>(intToChars(resolution[0]), intToChars(resolution[1]));
-		result += combineHexChars({res.secondItem(), res.firstItem()});
+		result += res.secondItem().secondItem();
+		result += res.secondItem().firstItem();
+		result += res.firstItem().secondItem();
+		result += res.firstItem().firstItem();
 		result += combineHexChars({0x3});
 
 		//Components
@@ -427,7 +448,7 @@ static class baseFunctions {
 		new_file.close();
 	}
 
-	template<class T>
+	/*template<class T>
 	string combineHexChars(std::initializer_list<T> args)
 	{
 		string result = "";
@@ -436,8 +457,21 @@ static class baseFunctions {
 			result+= static_cast<char>(arg);
 		}
 
-		return string;
+		return result;
+	}*/
+
+
+	string combineHexChars(std::initializer_list<int> args)
+	{
+		string result = "";
+		for (auto&& arg : args)
+		{
+			result += static_cast<char>(arg);
+		}
+
+		return result;
 	}
+
 
 	PairOf<char> intToChars(int item) {
 		PairOf<char> result;
