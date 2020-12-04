@@ -17,7 +17,7 @@ int main(int argc, const char * argv[]) {
 	cout << "Enter the path of bmp file to compress" << endl;
 	string file_path = "";
 	cin >> file_path;
-	 
+	
 
 
 
