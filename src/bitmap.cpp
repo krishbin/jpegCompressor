@@ -11,9 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-#include <vector>
 
-typedef uint64_t ullint;
 typedef uint32_t UINT;
 
 struct BitmapFileHeader {
@@ -26,9 +24,9 @@ struct BitmapFileHeader {
 };
 
 struct BitmapInfoHeader {
-  uint32_t size{0};   // size of this header
-  int32_t width{0};   // width of the final image
-  int32_t height{0};  // height of the final image
+  uint32_t header_size{0};  // size of this header
+  int32_t width{0};         // width of the final image
+  int32_t height{0};        // height of the final image
   // width and height are not signed because they determine how the pixel shall
   // be displayed
   // the negative value are representative of the 2D plane
@@ -55,48 +53,6 @@ struct BitmapColorHeader {
   uint32_t unused[16]{0};               // Unused data for sRGB color space
 };
 
-class bitmap {
- private:
-  BitmapFileHeader bmp_file_header;
-  BitmapInfoHeader bmp_info_header;
-  BitmapColorHeader bmp_color_header;
-  std::vector<uint8_t> pixel_data;
-
- public:
-  bitmap(const std::string filename) { read(filename); };
-
-  void read(const std::string filename) {
-    std::ifstream file(filename, std::ios_base::binary);
-
-    if (!file.is_open())
-      throw std::runtime_error(
-          "failed to open file, make sure you have a "
-          "valid path and a valid address to the file");
-
-    // read the header file
-    file.read((char*)&bmp_file_header, sizeof(bmp_file_header));
-
-    // file type of bmp is specified
-    if (bmp_file_header.fileType != 0x4D42)
-      throw std::runtime_error("unrecognized fileformat");
-
-    file.read((char*)&bmp_info_header, sizeof(bmp_info_header));
-
-    // go directly to the pixel data
-    file.seekg(bmp_file_header.pixelDataOffset, std::ios_base::beg);
-
-    std::vector<uint8_t> pixel_data(3 * bmp_info_header.width *
-                                    bmp_info_header.height);
-
-    std::cout << pixel_data.size();
-    file.close();
-  };
-
-  void Allocate(UINT Width, UINT Height){
-
-  };
-};
-
 class color {};
 
 class YCbCrcolor : public color {
@@ -119,24 +75,106 @@ class RGBcolor : public color {
  public:
   RGBcolor();
   RGBcolor(uint8_t, uint8_t, uint8_t);
-  operator YCbCrcolor(){
-    float _Y = 0.299*red + 0.587*green + 0.114*blue;
-    float _Cb = -0.1687*red - 0.3313*green + 0.5*blue + 16;
-    float _Cr = 0.5*red - 0.4187*green - 0.0813*blue + 16;
-    return YCbCrcolor(uint8_t(_Y),uint8_t(_Cb),uint8_t(_Cr));
+
+  operator YCbCrcolor() {
+    float _Y = 0.299 * red + 0.587 * green + 0.114 * blue;
+    float _Cb = -0.1687 * red - 0.3313 * green + 0.5 * blue + 16;
+    float _Cr = 0.5 * red - 0.4187 * green - 0.0813 * blue + 16;
+    return YCbCrcolor(uint8_t(_Y), uint8_t(_Cb), uint8_t(_Cr));
   };
+  void getData() {
+    std::cout << int(red) << "\t" << int(green) << "\t" << int(blue);
+  };
+  friend std::ostream& operator<<(std::ostream& s, RGBcolor const&);
+  friend std::istream& operator>>(std::istream& s, RGBcolor&);
 };
 
-RGBcolor::RGBcolor(){};
-RGBcolor::RGBcolor(uint8_t red, uint8_t green, uint8_t blue){
+std::ostream& operator<<(std::ostream& s, RGBcolor const& color){
+  return s << color.red << color.green << color.blue;
+};
+std::istream& operator>>(std::istream& s, RGBcolor& color){
+  return s >> color.red >> color.green >> color.blue;
+};
+RGBcolor::RGBcolor() { red = 0, blue = 0, green = 0; };
+RGBcolor::RGBcolor(uint8_t red, uint8_t green, uint8_t blue) {
   this->red = red;
   this->green = green;
   this->blue = blue;
 };
 
 YCbCrcolor::YCbCrcolor(){};
-YCbCrcolor::YCbCrcolor(uint8_t Y, uint8_t Cb, uint8_t Cr){
+YCbCrcolor::YCbCrcolor(uint8_t Y, uint8_t Cb, uint8_t Cr) {
   this->Y = Y;
   this->Cb = Cb;
   this->Cr = Cr;
+};
+
+class bitmap {
+ private:
+  BitmapFileHeader bmp_file_header;
+  BitmapInfoHeader bmp_info_header;
+  BitmapColorHeader bmp_color_header;
+  UINT _Width;
+  UINT _Height;
+  RGBcolor* _Data;
+
+ public:
+  bitmap(const std::string filename) { read(filename); };
+  ~bitmap() { FreeMemory(); };
+
+  void read(const std::string filename) {
+    std::ifstream file(filename, std::ios::in | std::ios::binary);
+
+    if (!file.is_open())
+      throw std::runtime_error(
+          "failed to open file, make sure you have a "
+          "valid path and a valid address to the file");
+
+    // read the header file
+    file.read((char*)&bmp_file_header, sizeof(BitmapFileHeader));
+
+    // file type of bmp is specified
+    // here 42 is B and 4D is M so this is a hex representation of it as per the
+    // bitmap format
+    if (bmp_file_header.fileType != 0x4D42)
+      throw std::runtime_error("unrecognized fileformat");
+
+    file.read((char*)&bmp_info_header, sizeof(BitmapInfoHeader));
+
+    _Width = abs(bmp_info_header.width);
+    _Height = abs(bmp_info_header.height);
+
+    // go directly to the pixel data
+    file.seekg(bmp_file_header.pixelDataOffset, std::ios::beg);
+
+    RGBcolor c1;
+    file.read((char *)&c1,sizeof(c1));
+    c1.getData();
+    std::cout << std::endl;
+    std::cout << (bmp_info_header.bitCount);
+
+    if (bmp_info_header.bitCount == 24) {
+      std::cout << "inthe if ";
+    }
+    if (bmp_info_header.bitCount == 32) {
+      Allocate(_Width, _Height);
+    };
+
+    file.close();
+  };
+
+  void Allocate(UINT Width, UINT Height) {
+    if (_Data != NULL) {
+      FreeMemory();
+    };
+    std::cout << int(_Width) << int(_Height) << std::endl;
+    _Data = new RGBcolor[Width * Height];
+  };
+
+  void FreeMemory() {
+    if (_Data) {
+      delete[] _Data;
+      _Data = NULL;
+    };
+  };
 };
