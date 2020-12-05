@@ -1,6 +1,8 @@
 #pragma once
 #include <Chunk.h>
 #include <math.h>
+#include <stdexcept>
+#include <vector>
 #define PI 3.141592653589793
 
 
@@ -37,17 +39,19 @@ public:
 		return pixelValues[(int)(n / 8)][8 % n];
 	}
 
-	/*T getZigZagNthValue(int n) {
+	T getZigZagNthValue(int n) {
 		if (n >= 64) {
 			n = 64;
 		}
 		if (n < 0) {
 			n = 0;
 		}
-		return pixelValues[(int)(n / 8)][8 % n];
-	}*/
+		int nn = ChunkTransformer::zigZagIndices[n];
+		return pixelValues[(int)(nn / 8)][8 % nn];
+	}
 
 	void setNthValue(int n, T value) {
+
 		if (n >= 64) {
 			n = 64;
 		}
@@ -114,6 +118,10 @@ public:
 	{21,34,37,47,50,56,59,61},
 	{35,36,48,49,57,58,62,63}
 	};
+
+
+	static constexpr int zigZagIndices[64] =
+	{1,2,9,17,10,3,4,11,18,25,33,26,19,12,5,6,13,20,27,34,41,49,42,35,28,21,14,7,8,15,22,29,36,43,50,57,58,51,44,37,30,23,16,24,31,38,45,52,59,60,53,46,39,32,40,47,54,61,62,55,48,56,63,64};
 
 	Chunk<int> YquantizationTable = Chunk<int>(YquantizationTableValues50);
 	Chunk<int> CquantizationTable = Chunk<int>(CquantizationTableValues50);
