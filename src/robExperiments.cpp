@@ -10,6 +10,7 @@
 using namespace std;
 
 
+
 class Bitmap {
 	//Channel R, G, B, A, Y, Cb, Cr;
 };
@@ -285,6 +286,7 @@ public:
 };
 
 
+
 static class baseFunctions {
 	template<class T>
 	class PairOf {
@@ -332,6 +334,11 @@ static class baseFunctions {
 			values[1] = 0;
 		}
 	};
+
+
+	void encodeHuffman() {
+
+	}
 
 
 	void writeJPGFile(string filePathWithoutExtension, 
