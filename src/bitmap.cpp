@@ -1,6 +1,6 @@
 /* TODO: read the bitmap file and create a multidimensional array containing all
  * the information about the pixels <26-11-20 krishbin> */
-/* NOTE: convert the rgb colorspace to CH, Y , Cb, Cr colorspace <26-11-20
+/* NOTE: convert the BGR colorspace to CH, Y , Cb, Cr colorspace <26-11-20
  * krishbin> */
 /* TODO: do make sure to downsample the cb and cr pixel data by a factor of 2
  * <03-12-20  krishbin paudel> */
@@ -53,13 +53,12 @@ struct BitmapColorHeader {
   uint32_t greenMask{0x0000ff00};       // Bit mask for the green channel
   uint32_t blueMask{0x000000ff};        // Bit mask for the blue channel
   uint32_t alphaMask{0xff000000};       // Bit mask for the alpha channel
-  uint32_t colorSpaceType{0x73524742};  // Default "sRGB" (0x73524742)
-  uint32_t unused[16]{0};               // Unused data for sRGB color space
+  uint32_t colorSpaceType{0x73524742};  // Default "sBGR" (0x73524742)
+  uint32_t unused[16]{0};               // Unused data for sBGR color space
 };
 #pragma pack(pop)
 
 class color {};
-
 class YCbCrcolor : public color {
  private:
   uint8_t Y;
@@ -74,15 +73,15 @@ class YCbCrcolor : public color {
   };
 };
 
-class RGBcolor : public color {
+class BGRcolor : public color {
  private:
-  uint8_t red;
-  uint8_t green;
   uint8_t blue;
+  uint8_t green;
+  uint8_t red;
 
  public:
-  RGBcolor();
-  RGBcolor(uint8_t, uint8_t, uint8_t);
+  BGRcolor();
+  BGRcolor(uint8_t, uint8_t, uint8_t);
 
   operator YCbCrcolor() {
     float _Y = 0.299 * red + 0.587 * green + 0.114 * blue;
@@ -91,21 +90,22 @@ class RGBcolor : public color {
     return YCbCrcolor(uint8_t(_Y), uint8_t(_Cb), uint8_t(_Cr));
   };
   void getData() {
-    std::cout << int(red) << "\t" << int(green) << "\t" << int(blue)
+    std::cout << int(blue) << "\t" << int(green) << "\t" << int(red)
               << std::endl;
   };
-  friend std::ostream& operator<<(std::ostream& s, RGBcolor const&);
-  friend std::istream& operator>>(std::istream& s, RGBcolor&);
+  friend std::ostream& operator<<(std::ostream& s, BGRcolor const&);
+  friend std::istream& operator>>(std::istream& s, BGRcolor&);
 };
 
-std::ostream& operator<<(std::ostream& s, RGBcolor const& color) {
-  return s << color.red << color.green << color.blue;
+std::ostream& operator<<(std::ostream& s, BGRcolor const& color) {
+  return s << color.blue << color.green << color.red;
 };
-std::istream& operator>>(std::istream& s, RGBcolor& color) {
-  return s >> color.red >> color.green >> color.blue;
+std::istream& operator>>(std::istream& s, BGRcolor& color) {
+  return s >> color.blue >> color.green >> color.red;
 };
-RGBcolor::RGBcolor() { red = 0, blue = 0, green = 0; };
-RGBcolor::RGBcolor(uint8_t red, uint8_t green, uint8_t blue) {
+
+BGRcolor::BGRcolor() { red = 0, blue = 0, green = 0; };
+BGRcolor::BGRcolor(uint8_t blue, uint8_t green, uint8_t red) {
   this->red = red;
   this->green = green;
   this->blue = blue;
@@ -118,22 +118,23 @@ YCbCrcolor::YCbCrcolor(uint8_t Y, uint8_t Cb, uint8_t Cr) {
   this->Cr = Cr;
 };
 
-enum colorSpace { RGB, YCbCr };
+enum colorSpace { BGR, YCbCr };
 class bitmap {
  private:
-  colorSpace type{RGB};
+  colorSpace type{BGR};
+  int padding;
   BitmapFileHeader bmp_file_header;
   BitmapInfoHeader bmp_info_header;
   BitmapColorHeader bmp_color_header;
   uint32_t _Width;
   uint32_t _Height;
-  RGBcolor* _RGBData;
+  BGRcolor* _BGRData;
   YCbCrcolor* _YCbCrData;
 
   void FreeMemory() {
-    if (_RGBData) {
-      delete[] _RGBData;
-      _RGBData = NULL;
+    if (_BGRData) {
+      delete[] _BGRData;
+      _BGRData = NULL;
     };
     if (_YCbCrData) {
       delete[] _YCbCrData;
@@ -141,9 +142,9 @@ class bitmap {
     };
   };
   void FreeMemory(colorSpace _type) {
-    if (_type == RGB) {
-      delete[] _RGBData;
-      _RGBData = NULL;
+    if (_type == BGR) {
+      delete[] _BGRData;
+      _BGRData = NULL;
     };
     if (type == YCbCr) {
       delete[] _YCbCrData;
@@ -152,11 +153,11 @@ class bitmap {
   };
 
   void Allocate() {
-    if (type == RGB) {
-      if (_RGBData != NULL) {
-        FreeMemory(RGB);
+    if (type == BGR) {
+      if (_BGRData != NULL) {
+        FreeMemory(BGR);
       };
-      _RGBData = new RGBcolor[_Width * _Height];
+      _BGRData = new BGRcolor[_Width * _Height];
     } else if (type == YCbCr) {
       if (_YCbCrData != NULL) {
         FreeMemory(YCbCr);
@@ -169,7 +170,7 @@ class bitmap {
     type = YCbCr;
     Allocate();
     for (int i = 0; i < _Width * _Height; ++i) {
-      _YCbCrData[i] = _RGBData[i];
+      _YCbCrData[i] = _BGRData[i];
     };
   };
 
@@ -197,18 +198,24 @@ class bitmap {
 
     _Width = abs(bmp_info_header.width);
     _Height = abs(bmp_info_header.height);
+    padding = _Width % 4 ? (4 - _Width % 4):0;
 
     file.read((char*)&bmp_color_header, sizeof(BitmapColorHeader));
-    std::cout<< bmp_color_header.colorSpaceType << std::endl;
     // go directly to the pixel data
     file.seekg(bmp_file_header.pixelDataOffset, std::ios::beg);
 
     if (bmp_info_header.bitCount == 24) {
       Allocate();
-      for (int i = 0; i < _Width * _Height; ++i) {
-        file.read((char*)&_RGBData[i], sizeof(_RGBData[i]));
+      for (int y = _Height - 1; y >= 0; --y) {
+        for (int x = 0; x < _Width; ++x) {
+          file.read((char*)&_BGRData[y * (_Width) + x],
+                    sizeof(_BGRData[y * (_Width) + x]));
+        };
+        //3 channel skip for padding
+        file.seekg(padding*3,file.cur);
       };
-    }
+    };
+
     if (bmp_info_header.bitCount == 32) {
       Allocate();
     };
@@ -218,7 +225,7 @@ class bitmap {
   };
 
   void write(const std::string filename) {
-    if (_RGBData == NULL) {
+    if (_BGRData == NULL) {
       std::runtime_error("Error3:there is nothing to write");
     };
     std::ofstream file(filename, std::ios::out | std::ios::binary);
@@ -226,20 +233,29 @@ class bitmap {
                                       sizeof(bmp_info_header) +
                                       sizeof(bmp_color_header);
     bmp_file_header.fileSize = bmp_file_header.pixelDataOffset +
-                               static_cast<uint32_t>(_Width * _Height * 3);
+                               static_cast<uint32_t>((_Width+padding) * _Height * 3);
+    bmp_info_header.colorsTotal = 0;
+    bmp_info_header.colorsImportant = 0;
     file.write((char*)&bmp_file_header, sizeof(bmp_file_header));
     file.write((char*)&bmp_info_header, sizeof(bmp_info_header));
     file.write((char*)&bmp_color_header, sizeof(bmp_color_header));
-    for (int i = 0; i < _Width * _Height; ++i) {
-      file.write((char*)&_RGBData[i], sizeof(_RGBData[i]));
+    for (int y = _Height - 1; y >= 0; --y) {
+      for (int x = 0; x < _Width; ++x) {
+        file.write((char*)&_BGRData[y * (_Width + padding) + x],
+                   sizeof(_BGRData[y * (_Width + padding) + x]));
+      };
+      if (_Width % 4 != 0) {
+        for (int pad = 0; pad < padding; ++pad) {
+          file.write((char*)0x00, sizeof(0x00));
+        }
+      }
     };
   };
 
-
   void showData(colorSpace _type) {
-    if (_type == RGB && _RGBData != NULL) {
+    if (_type == BGR && _BGRData != NULL) {
       for (int i = 0; i < _Width * _Height; ++i) {
-        _RGBData[i].getData();
+        _BGRData[i].getData();
       };
     } else if (_type == YCbCr && _YCbCrData != NULL) {
       for (int i = 0; i < _Width * _Height; ++i) {
