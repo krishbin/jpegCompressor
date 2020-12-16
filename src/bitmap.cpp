@@ -140,7 +140,9 @@ class bitmap {
     SuperChunk* _SChunk;
     Chunk<int>* _YChunk;
     Chunk<int>* _CbChunk;
+    Chunk<int>* _DownCbChunk;
     Chunk<int>* _CrChunk;
+    Chunk<int>* _DownCrChunk;
     BGRcolor* _BGRData;
     YCbCrcolor* _YCbCrData;
 
@@ -165,10 +167,10 @@ class bitmap {
         delete[] _CrChunk;
         _CrChunk = NULL;
       };
-      /* if (_SChunk) { */
-      /*   delete[] _SChunk; */
-      /*   _SChunk = NULL; */
-      /* }; */
+      if (_SChunk) {
+        delete[] _SChunk;
+        _SChunk = NULL;
+      };
     };
     void FreeMemory(colorSpace _type) {
       if (_type == BGR) {
@@ -228,8 +230,8 @@ class bitmap {
       _Width = abs(bmp_info_header.width);
       _Height = abs(bmp_info_header.height);
 
-      /* chunkWidth = ceil((float(_Width)/16))*2; */
-      /* chunkHeight = ceil((float(_Height)/16))*2; */
+      chunkWidth = ceil((float(_Width)/16))*2;
+      chunkHeight = ceil((float(_Height)/16))*2;
       /* superChunkWidth = */ 
       /* superChunkHeight = */ 
 
@@ -259,6 +261,8 @@ class bitmap {
       };
 
       convToYCbCr();
+      toChunk();
+      downSample();
       file.close();
     };
 
@@ -329,9 +333,9 @@ class bitmap {
               Crpixels[u][v] = _YCbCrData[(k+v)*_Width + (h+u)].Cr;
             }
           }
-          _YChunk[count] = Ypixels;
-          _CbChunk[count] = Cbpixels;
-          _CrChunk[count] = Crpixels;
+          _YChunk[count]  = Chunk<int>(Ypixels);
+          _CbChunk[count] = Chunk<int>(Cbpixels);
+          _CrChunk[count] = Chunk<int>(Crpixels);
           ++count;
         };
       };
@@ -339,26 +343,43 @@ class bitmap {
 
     void downSample(){
       int count = 0;
-      int pixels[8][8];
-      for (int y = 0 ; y < chunkHeight ; y=y+2) {
+      int CbPixels[8][8];
+      int CrPixels[8][8];
+      for (int y = 0 ; y < chunkHeight; y=y+2) {
         for (int x = 0; x < chunkWidth; x=x+2) {
           for(int v = 0;v<8;++v){
              for(int u = 0;u<8;++u){
-               pixels[u][v] = _CbChunk[y*chunkWidth + x].pixelValues[u][v] 
+               CbPixels[u][v] = int((_CbChunk[y*chunkWidth + x].pixelValues[u][v] 
                  + _CbChunk[(y+1)*chunkWidth + x].pixelValues[u][v]
                  + _CbChunk[y*chunkWidth + (x+1)].pixelValues[u][v]
-                 + _CbChunk[(y+1)*chunkWidth + (x+1)].pixelValues[u][v];
+                 + _CbChunk[(y+1)*chunkWidth + (x+1)].pixelValues[u][v])/4);
+               CrPixels[u][v] = int((_CrChunk[y*chunkWidth + x].pixelValues[u][v] 
+                 + _CrChunk[(y+1)*chunkWidth + x].pixelValues[u][v]
+                 + _CrChunk[y*chunkWidth + (x+1)].pixelValues[u][v]
+                 + _CrChunk[(y+1)*chunkWidth + (x+1)].pixelValues[u][v])/4);
              }
           }
-          _CbChunk[count]=pixels;
-          _CbChunk[count].display();
+          _CbChunk[count]=Chunk<int>(CbPixels);
+          _CrChunk[count]=Chunk<int>(CrPixels);
           ++count;
-          std::cout<<count<<std::endl;
         };
       };
     };
 
-    /* void toSuperChunks(){ */
-    /* }; */
+    void toSuperChunks(){
+      int count;
+      _SChunk = new SuperChunk[chunkHeight*chunkWidth/4];
+      for (int y = 0 ; y < chunkHeight/2; ++y) {
+        for (int x = 0; x < chunkWidth/2; ++x) {
+          _SChunk[count].Y[0] = _YChunk[y*2*chunkWidth + x*2];
+          _SChunk[count].Y[1] = _YChunk[y*2*chunkWidth + (x*2+1)];
+          _SChunk[count].Y[2] = _YChunk[(y*2+1)*chunkWidth + x*2];
+          _SChunk[count].Y[3] = _YChunk[(y*2+1)*chunkWidth + (x*2+1)];
+          _SChunk[count].Cb = _CbChunk[count];
+          _SChunk[count].Cr = _CrChunk[count];
+          ++count;
+        };
+      };
+    };
 
 };
