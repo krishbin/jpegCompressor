@@ -208,9 +208,9 @@ public:
 	void writeJPGFile(string filePathWithoutExtension, 
 		Chunk<int> QuantisationWeightsY, 
 		Chunk<int> QuantisationWeightsC, 
-		int resolution[2],
-		HuffmanTable HuffmanTablesDC[2],
-		HuffmanTable HuffmanTablesAC[2],
+		int width, int height,
+		HuffmanTable HuffmanTableYDC, HuffmanTable HuffmanTableCDC,
+		HuffmanTable HuffmanTableYAC, HuffmanTable HuffmanTableCAC,
 		SuperChunk theSuperChunks[]
 	) {
 		fstream new_file;
@@ -256,7 +256,7 @@ public:
 		*/
 		//Header
 		result += combineHexChars({ 0xff,0xc0, 0x0, 0x11, 0x8 });
-		PairOf<PairOf<char>> res = PairOf<PairOf<char>>(intToChars(resolution[0]), intToChars(resolution[1]));
+		PairOf<PairOf<char>> res = PairOf<PairOf<char>>(intToChars(width), intToChars(height));
 		result += res.secondItem().secondItem();
 		result += res.secondItem().firstItem();
 		result += res.firstItem().secondItem();
@@ -278,41 +278,41 @@ public:
 		//DC tables
 
 			//separator, length and specification 0x00 (DC baseline))
-		PairOf<char> length = intToChars(HuffmanTablesDC[0].length);
+		PairOf<char> length = intToChars(HuffmanTableYDC.length);
 		result += combineHexChars({0xff, 0xc4});
 		result += combineHexChars({length.firstItem(), length.secondItem()});
 		result += combineHexChars({ 0x00 });
 		for(int i2 = 0; i2 < 16; i2 ++)
-			result += combineHexChars({HuffmanTablesDC[0].CodeCounts[i2]});
-		result += HuffmanTablesDC[0].CodeValues;
+			result += combineHexChars({HuffmanTableYDC.CodeCounts[i2]});
+		result += HuffmanTableYDC.CodeValues;
 
-		length = intToChars(HuffmanTablesDC[1].length);
+		length = intToChars(HuffmanTableCDC.length);
 		result += combineHexChars({ 0xff, 0xc4 });
 		result += combineHexChars({ length.firstItem(), length.secondItem() });
 		result += combineHexChars({ 0x01 });
 		for (int i2 = 0; i2 < 16; i2++)
-			result += combineHexChars({ HuffmanTablesDC[1].CodeCounts[i2] });
-		result += HuffmanTablesDC[1].CodeValues;
+			result += combineHexChars({ HuffmanTableCDC.CodeCounts[i2] });
+		result += HuffmanTableCDC.CodeValues;
 		
 
 		//AC tables
 
 			//separator, length  and specification 0x10 (AC baseline))
-		length = intToChars(HuffmanTablesAC[0].length);
+		length = intToChars(HuffmanTableYAC.length);
 		result += combineHexChars({ 0xff, 0xc4 });
 		result += combineHexChars({ length.firstItem(), length.secondItem() });
 		result += combineHexChars({ 0x10 });
 		for (int i2 = 0; i2 < 16; i2++)
-			result += combineHexChars({ HuffmanTablesAC[0].CodeCounts[i2] });
-		result += HuffmanTablesAC[0].CodeValues;
+			result += combineHexChars({ HuffmanTableYAC.CodeCounts[i2] });
+		result += HuffmanTableYAC.CodeValues;
 
-		length = intToChars(HuffmanTablesAC[1].length);
+		length = intToChars(HuffmanTableCAC.length);
 		result += combineHexChars({ 0xff, 0xc4 });
 		result += combineHexChars({ length.firstItem(), length.secondItem() });
 		result += combineHexChars({ 0x11 });
 		for (int i2 = 0; i2 < 16; i2++)
-			result += combineHexChars({ HuffmanTablesAC[1].CodeCounts[i2] });
-		result += HuffmanTablesAC[1].CodeValues;
+			result += combineHexChars({ HuffmanTableCAC.CodeCounts[i2] });
+		result += HuffmanTableCAC.CodeValues;
 		
 
 		//ffda start of scan
