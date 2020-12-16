@@ -1,17 +1,17 @@
 #pragma once
-#include <Chunk.h>
 #include <math.h>
 #include <stdexcept>
+#include <iostream>
 //#include <vector>
 #define PI 3.141592653589793
 
-
+class bitmap;
 template<class T>
+
 class Chunk {
-
-
-public:
+private:
 	T pixelValues[8][8];
+public:
 	Chunk(T values[8][8]) {
 		for (int i = 0; i < 8; i++) {
 			for (int ii = 0; ii < 8; ii++) {
@@ -28,6 +28,18 @@ public:
 		}
 
 	}
+	void display() {
+		for (int i = 0; i < 8; i++) {
+			for (int ii = 0; ii < 8; ii++) {
+        std::cout<<pixelValues[i][ii]<<"\t";
+			}
+      std::cout<<std::endl;
+		};
+  };
+
+  int* returnPixels(){
+    return this->pixelValues;
+  };
 
 	T getNthValue(int n) {
 		if (n >= 64) {
@@ -46,8 +58,9 @@ public:
 		if (n < 0) {
 			n = 0;
 		}
-		int nn = ChunkTransformer::zigZagIndices[n];
-		return pixelValues[(int)(nn / 8)][8 % nn];
+		/* int nn = ChunkTransformer::zigZagIndices[n]; */
+		/* return pixelValues[(int)(nn / 8)][8 % nn]; */
+    return 0;
 	}
 
 	void setNthValue(int n, T value) {
@@ -71,6 +84,8 @@ public:
 
 	~Chunk() {
 	}
+  friend class ChunkTransformer;
+  friend class bitmap;
 };
 
 class SuperChunk {
@@ -81,7 +96,8 @@ public:
 };
 
 
-static class ChunkTransformer {
+
+class ChunkTransformer {
 private:
 	int YquantizationTableValues50[8][8] = {
 		{16,12,14,14,18,24,49,72},
@@ -108,7 +124,7 @@ private:
 
 
 	float alpha(int u) {
-		if (u = 0) {
+		if (u == 0) {
 			return 0.7071067812f;
 		}
 		else {
