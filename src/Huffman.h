@@ -65,6 +65,16 @@ public:
 		CodeLengths[0] = 0;
 		Codes[0] = 0;
 	}
+  ~HuffmanTable(){
+    if(CodeLengths){
+    delete[] CodeLengths;
+    CodeLengths = NULL;
+    }
+    if(Codes){
+    delete[] Codes;
+    Codes = NULL;
+    }
+  }
 };
 
 class HuffmanTransformer {

@@ -380,5 +380,14 @@ class bitmap {
         };
       };
     };
-
+    
+    SuperChunk* getSChunk(){
+      return _SChunk;
+    };
+    int getWidth(){
+      return int(_Width);
+    };
+    int getHeight(){
+      return int(_Height);
+    };
 };
