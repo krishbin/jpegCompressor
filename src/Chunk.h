@@ -2,7 +2,7 @@
 #include <Chunk.h>
 #include <math.h>
 #include <stdexcept>
-#include <vector>
+//#include <vector>
 #define PI 3.141592653589793
 
 
@@ -72,6 +72,14 @@ public:
 	~Chunk() {
 	}
 };
+
+class SuperChunk {
+public:
+	Chunk<int> Y[4];
+	Chunk<int> Cb;
+	Chunk<int> Cr;
+};
+
 
 static class ChunkTransformer {
 private:
