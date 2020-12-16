@@ -60,9 +60,9 @@ struct BitmapColorHeader {
 class color {};
 class YCbCrcolor : public color {
   private:
-    uint8_t Y;
-    uint8_t Cb;
-    uint8_t Cr;
+    uint8_t Y = 0;
+    uint8_t Cb = 0;
+    uint8_t Cr = 0;
 
   public:
     YCbCrcolor();
@@ -75,9 +75,9 @@ class YCbCrcolor : public color {
 
 class BGRcolor : public color {
   private:
-    uint8_t blue;
-    uint8_t green;
-    uint8_t red;
+    uint8_t blue = 0;
+    uint8_t green = 0;
+    uint8_t red = 0;
 
   public:
     BGRcolor();
@@ -135,7 +135,7 @@ class bitmap {
     BitmapColorHeader bmp_color_header;
     uint32_t _Width;
     uint32_t _Height;
-    SuperChunk* _SChunk;
+    SuperChunk* _SChunk = NULL;
     Chunk<int>* _YChunk;
     Chunk<int>* _CbChunk;
     Chunk<int>* _DownCbChunk;
@@ -145,43 +145,48 @@ class bitmap {
     YCbCrcolor* _YCbCrData;
 
     void FreeMemory() {
+       std::cout << "I'm inside t FREE MEMORY" << std::endl;
       if (_BGRData) {
-        delete[] _BGRData;
+        //delete[] _BGRData;
         _BGRData = NULL;
       };
       if (_YCbCrData) {
-        delete[] _YCbCrData;
+        //delete[] _YCbCrData;
         _YCbCrData = NULL;
       };
       if (_YChunk) {
-        delete[] _YChunk;
+        //delete[] _YChunk;
         _YChunk = NULL;
       };
       if (_CbChunk) {
-        delete[] _CbChunk;
+        //delete[] _CbChunk;
         _CbChunk = NULL;
       };
       if (_CrChunk) {
-        delete[] _CrChunk;
+        //delete[] _CrChunk;
         _CrChunk = NULL;
       };
       if (_SChunk) {
-        delete[] _SChunk;
+       // delete[] _SChunk;
         _SChunk = NULL;
       };
     };
     void FreeMemory(colorSpace _type) {
-      if (_type == BGR) {
-        delete[] _BGRData;
+      std::cout << "I'm inside colourspace free memory" << std::endl;
+      if (_type == BGR && _BGRData) {
+        std::cout << "before delete[]" << std::endl;
+        //delete[] _BGRData;
+        std::cout << "after delete[]" << std::endl;
         _BGRData = NULL;
       };
-      if (type == YCbCr) {
-        delete[] _YCbCrData;
+      if (_type == YCbCr && _YCbCrData) {
+        //delete[] _YCbCrData;
         _YCbCrData = NULL;
       };
     };
 
     void Allocate() {
+        std::cout << "I'm inside allocate" << std::endl;
       if (type == BGR) {
         if (_BGRData != NULL) {
           FreeMemory(BGR);
@@ -216,7 +221,7 @@ class bitmap {
             "valid path and a valid address to the file");
 
       file.read((char*)&bmp_file_header, sizeof(BitmapFileHeader));
-
+      std::cout << "File READ" << std::endl;
       // file type of bmp is specified
       // here 42 is B and 4D is M so this is a hex representation of it as per the
       // bitmap format BM is refered as magic
@@ -224,7 +229,7 @@ class bitmap {
         throw std::runtime_error("Error2:unrecognized fileformat");
 
       file.read((char*)&bmp_info_header, sizeof(BitmapInfoHeader));
-
+      std::cout << "File info header READ" << std::endl;
       _Width = abs(bmp_info_header.width);
       _Height = abs(bmp_info_header.height);
 
@@ -241,8 +246,11 @@ class bitmap {
       // go directly to the pixel data
       file.seekg(bmp_file_header.pixelDataOffset, std::ios::beg);
 
+      std::cout << "Almost reached Allocate" << std::endl;
       if (bmp_info_header.bitCount == 24) {
+        std::cout << "Before Allocate" << std::endl;
         Allocate();
+        std::cout << "After Allocate" << std::endl;
         for (int y = _Height - 1; y >= 0; --y) {
           for (int x = 0; x < _Width; ++x) {
             file.read((char*)&_BGRData[y * (_Width) + x],
@@ -267,6 +275,8 @@ class bitmap {
       std::cout<<"Made Chunks"<<std::endl;
       downSample();
       std::cout<<"Image Downsampled"<<std::endl;
+      toSuperChunks();
+      std::cout << "SuperChunks created" << std::endl;
       file.close();
     };
 
@@ -371,7 +381,7 @@ class bitmap {
     };
 
     void toSuperChunks(){
-      int count;
+      int count = 0;
       _SChunk = new SuperChunk[chunkHeight*chunkWidth/4];
       for (int y = 0 ; y < chunkHeight/2; ++y) {
         for (int x = 0; x < chunkWidth/2; ++x) {

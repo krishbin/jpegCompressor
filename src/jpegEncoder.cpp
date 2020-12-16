@@ -81,6 +81,7 @@ class jfifEncoder {
 
 
 
+
 	template<class T>
 	class PairOf {
 	public:
@@ -228,10 +229,10 @@ public:
     cout<<"i was here"<<endl;
 		string result = "";
 		//ff d8 (start of file)
-		result += static_cast<char>(0xff) + static_cast<char>(0xd8);
+		//result += static_cast<char>(0xff) + static_cast<char>(0xd8);
 		cout << result << endl;
 		//ff e0 (Tells the application that this is JFIF format)
-		result += combineHexChars({0xff,0xe0});
+		result += combineHexChars({0xff, 0xd8, 0xff,0xe0});
 		result += combineHexChars({0x0,0x10,0x4a,0x46,0x49,0x46,0x0,0x01,0x01,0x01,0x0,0x60,0x0,0x60,0x0,0x0});
 
 		cout << result << endl;
@@ -244,14 +245,14 @@ public:
 		*/
 		//Storing Luminance Quantisation table
 		result += combineHexChars({ 0xff,0xdb, 0x0,0x43 });
-		result += combineHexChars({ 0b00010000 });
+		result += combineHexChars({ 0b00000000 });
 		//Chunk<char> values = chunkTransformer.ConvertToZigZagString(QuantisationWeightsY);
 		for (int i = 0; i < 64; i++) {
 			result += QuantisationWeightsY.getZigZagNthValue(i);
 		}
 		//Storing Colour Quantisation table
 		result += combineHexChars({ 0xff,0xdb, 0x0, 0x43 });
-		result += combineHexChars({ 0b00010001 });
+		result += combineHexChars({ 0b00000001 });
 		//values = chunkTransformer.ConvertToZigZagString(QuantisationWeightsC);
 		for (int i = 0; i < 64; i++) {
 			result += QuantisationWeightsC.getZigZagNthValue(i);
@@ -264,10 +265,11 @@ public:
 		//Header
 		result += combineHexChars({ 0xff,0xc0, 0x0, 0x11, 0x8 });
 		PairOf<PairOf<char>> res = PairOf<PairOf<char>>(intToChars(width), intToChars(height));
-		result += res.secondItem().secondItem();
+	
 		result += res.secondItem().firstItem();
-		result += res.firstItem().secondItem();
+		result += res.secondItem().secondItem();
 		result += res.firstItem().firstItem();
+		result += res.firstItem().secondItem();
 		result += combineHexChars({0x3});
 
 		//Components
@@ -343,7 +345,8 @@ public:
 		string bitholder = "";
 		for (int x = 0; x < NumberOfSuperChunks; x++)
 		{
-			SuperChunk aSuperChunk = theSuperChunks[x];
+			SuperChunk aSuperChunk;
+			aSuperChunk = theSuperChunks[x];
 			//Encoding the Y component
 			for (int counter = 0; counter < 4; counter++) {
 				//DC encoding

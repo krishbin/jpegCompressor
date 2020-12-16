@@ -67,11 +67,11 @@ public:
 	}
   ~HuffmanTable(){
     if(CodeLengths){
-    delete[] CodeLengths;
+    //delete[] CodeLengths;
     CodeLengths = NULL;
     }
     if(Codes){
-    delete[] Codes;
+    //delete[] Codes;
     Codes = NULL;
     }
   }
