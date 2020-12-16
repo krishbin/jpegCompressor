@@ -9,8 +9,8 @@ public:
 	int length;
 	int CodeCounts[16];
 	string CodeValues;
-	int CodeLengths[1];
-	int Codes[1];
+	int* CodeLengths;
+	int* Codes;
 
 	HuffmanTable(bool _AC, int _length, int ccounts[16], string cvalues, int numCodes = -1) {
 		length = _length;
@@ -26,8 +26,8 @@ public:
 			numCodes = CodeValues.length();
 		}
 
-		CodeLengths[numCodes];
-		Codes[numCodes];
+    CodeLengths = new int[numCodes];
+    Codes = new int[numCodes];
 		int index = 0;
 		for (int ii = 0; ii < 16; ii++) {
 			for (int jj = 0; jj < CodeCounts[ii]; jj++) {
@@ -67,7 +67,7 @@ public:
 	}
 };
 
-static class HuffmanTransformer {
+class HuffmanTransformer {
 public:
 	static string intToBin(int n) {
 		std::string r;
@@ -75,14 +75,14 @@ public:
 		return r;
 	}
 
-
 	static string encode(HuffmanTable table, int value) {
 		for (int i = 0; i < table.CodeValues.length(); i++) {
 			if (value == (int)table.CodeValues.at(i)) {
 				return intToBin(table.Codes[i]);
 			}
 		}
-	}
+    return "";
+	};
 };
 
 
