@@ -1,6 +1,6 @@
 
 #include<iostream>
-#include<Chunk.h>
+#include"Chunk.cpp"
 #include<string>
 #include<fstream>
 #include"Huffman.h"
@@ -8,7 +8,7 @@
 using namespace std;
 
 
-static class jfifEncoder {
+class jfifEncoder {
 
 	
 	int dummyYDCTableCodeCounts[16] = { 0x00, 0x01,0x05,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
@@ -95,7 +95,7 @@ static class jfifEncoder {
 				return values[0];
 			}
 			else {
-				return values[1]
+				return values[1];
 			}
 		}
 
@@ -104,7 +104,7 @@ static class jfifEncoder {
 				return values[0];
 			}
 			else {
-				return values[1]
+				return values[1];
 			}
 		}
 
@@ -154,7 +154,7 @@ static class jfifEncoder {
 			if (bitHolder.length() >= 8) {
 				int t_int = 0;
 				for (int ii = 0; ii < 8; ii++) {
-					t_int << 1;
+					t_int <<= 1;
 					if (bitHolder.at(ii) == '1') {
 						t_int += 1;
 					}
@@ -199,6 +199,7 @@ static class jfifEncoder {
 		if (item < 0) item = 0;
 		result.values[0] = 16 % (int)(item / 256);
 		result.values[1] = 16 % item;
+    return result;
 	}
 
 public:
@@ -285,7 +286,7 @@ public:
 			result += combineHexChars({HuffmanTablesDC[0].CodeCounts[i2]});
 		result += HuffmanTablesDC[0].CodeValues;
 
-		PairOf<char> length = intToChars(HuffmanTablesDC[1].length);
+		length = intToChars(HuffmanTablesDC[1].length);
 		result += combineHexChars({ 0xff, 0xc4 });
 		result += combineHexChars({ length.firstItem(), length.secondItem() });
 		result += combineHexChars({ 0x01 });
@@ -297,7 +298,7 @@ public:
 		//AC tables
 
 			//separator, length  and specification 0x10 (AC baseline))
-		PairOf<char> length = intToChars(HuffmanTablesAC[0].length);
+		length = intToChars(HuffmanTablesAC[0].length);
 		result += combineHexChars({ 0xff, 0xc4 });
 		result += combineHexChars({ length.firstItem(), length.secondItem() });
 		result += combineHexChars({ 0x10 });
@@ -305,7 +306,7 @@ public:
 			result += combineHexChars({ HuffmanTablesAC[0].CodeCounts[i2] });
 		result += HuffmanTablesAC[0].CodeValues;
 
-		PairOf<char> length = intToChars(HuffmanTablesAC[1].length);
+		length = intToChars(HuffmanTablesAC[1].length);
 		result += combineHexChars({ 0xff, 0xc4 });
 		result += combineHexChars({ length.firstItem(), length.secondItem() });
 		result += combineHexChars({ 0x11 });
@@ -373,8 +374,8 @@ public:
 			}
 
 			//Encoding the Cb component
-			int t_dc_mag;
-			int t_dc_bits;
+			int t_dc_mag = 0;
+			int t_dc_bits = 0;
 			int difference = aSuperChunk.Cb.pixelValues[0][0] - LastDCDifference[0];
 			LastDCDifference[1] = aSuperChunk.Cb.pixelValues[0][0];
 			ReverseExtend(difference, t_dc_mag, t_dc_bits);
@@ -411,9 +412,9 @@ public:
 			}
 
 			//Encoding the Cr component
-			int t_dc_mag;
-			int t_dc_bits;
-			int difference = aSuperChunk.Cr.pixelValues[0][0] - LastDCDifference[0];
+			t_dc_mag = 0;
+			t_dc_bits = 0;
+			difference = aSuperChunk.Cr.pixelValues[0][0] - LastDCDifference[0];
 			LastDCDifference[2] = aSuperChunk.Cr.pixelValues[0][0];
 			ReverseExtend(difference, t_dc_mag, t_dc_bits);
 			temp = HuffmanTransformer::encode(dummyCDCTable, t_dc_mag);
@@ -421,8 +422,8 @@ public:
 			//WriteRawBits(encodedMagnitude, bits)
 
 			//AC encoding
-			int zeros = 0;
-			int i = 1;
+			zeros = 0;
+			i = 1;
 			while (i < 64) {
 				if (aSuperChunk.Cr.getZigZagNthValue(i) != 0) {
 
@@ -457,10 +458,4 @@ public:
 		result = "";
 		new_file.close();
 	}
-
-
-	
 };
-
-
-

@@ -14,7 +14,7 @@ using namespace std;
 
 int main(int argc, const char* argv[]) {
   std::cout << "JPEG Compressor" << std::endl;
-  string file_path = "../../bmp_images/sample24bit.bmp";
+  string file_path = "../../bmp_images/sample1.bmp";
   bitmap file(file_path);
   return 0;
 }

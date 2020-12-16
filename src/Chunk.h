@@ -282,8 +282,4 @@ public:
 		return result;
 	}
 
-
 };
-
-
-

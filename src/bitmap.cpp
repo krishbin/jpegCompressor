@@ -14,7 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-#include "Chunk.h"
+#include "Chunk.cpp"
 
 #pragma pack(push, 1)
 struct BitmapFileHeader {
@@ -56,8 +56,6 @@ struct BitmapColorHeader {
   uint32_t unused[16]{0};               // Unused data for sBGR color space
 };
 #pragma pack(pop)
-
-class bitmap;
 
 class color {};
 class YCbCrcolor : public color {
@@ -333,9 +331,10 @@ class bitmap {
               Crpixels[u][v] = _YCbCrData[(k+v)*_Width + (h+u)].Cr;
             }
           }
-          _YChunk[count]  = Chunk<int>(Ypixels);
-          _CbChunk[count] = Chunk<int>(Cbpixels);
-          _CrChunk[count] = Chunk<int>(Crpixels);
+          _YChunk[count]  = DCTandCompressChunk(Chunk<int>(Ypixels),YquantizationTable);
+          _CbChunk[count] = DCTandCompressChunk(Chunk<int>(Cbpixels),CquantizationTable);
+          _CrChunk[count] = DCTandCompressChunk(Chunk<int>(Crpixels),CquantizationTable);
+          _CbChunk[count].display();
           ++count;
         };
       };
