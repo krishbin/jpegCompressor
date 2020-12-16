@@ -1,5 +1,3 @@
-/* TODO: read the bitmap file and create a multidimensional array containing all
- * the information about the pixels <26-11-20 krishbin> */
 /* NOTE: convert the BGR colorspace to CH, Y , Cb, Cr colorspace <26-11-20
  * krishbin> */
 /* TODO: do make sure to downsample the cb and cr pixel data by a factor of 2
@@ -16,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include "Chunk.h"
 
 #pragma pack(push, 1)
 struct BitmapFileHeader {
@@ -127,11 +126,17 @@ class bitmap {
  private:
   colorSpace type{BGR};
   int padding;
+  int numberOfChunks;
+  int numberOfSuperChunks;
   BitmapFileHeader bmp_file_header;
   BitmapInfoHeader bmp_info_header;
   BitmapColorHeader bmp_color_header;
   uint32_t _Width;
   uint32_t _Height;
+  SuperChunk* _SChunk;
+  Chunk<int>* _YChunk;
+  Chunk<int>* _CbChunk;
+  Chunk<int>* _CrChunk;
   BGRcolor* _BGRData;
   YCbCrcolor* _YCbCrData;
 
@@ -144,6 +149,22 @@ class bitmap {
       delete[] _YCbCrData;
       _YCbCrData = NULL;
     };
+    if (_YChunk) {
+      delete[] _YChunk;
+      _YChunk = NULL;
+    };
+    /* if (_CbChunk) { */
+    /*   delete[] _CbChunk; */
+    /*   _CbChunk = NULL; */
+    /* }; */
+    /* if (_CrChunk) { */
+    /*   delete[] _CrChunk; */
+    /*   _CrChunk = NULL; */
+    /* }; */
+    /* if (_SChunk) { */
+    /*   delete[] _SChunk; */
+    /*   _SChunk = NULL; */
+    /* }; */
   };
   void FreeMemory(colorSpace _type) {
     if (_type == BGR) {
@@ -202,7 +223,10 @@ class bitmap {
 
     _Width = abs(bmp_info_header.width);
     _Height = abs(bmp_info_header.height);
+
     padding = _Width % 4 ? (4 - _Width % 4) : 0;
+    numberOfChunks=ceil(float(_Width)/8)*ceil(float(_Height)/8);
+
 
     file.read((char*)&bmp_color_header, sizeof(BitmapColorHeader));
     // go directly to the pixel data
@@ -269,18 +293,17 @@ class bitmap {
     }
   };
 
-  int roundUP(float x){
-    return int(x)+1;
-  };
-
   void toChunk(){
-    int _count = 0;
-    int numberOfChunks=ceil(float(_Width)/8)*ceil(float(_Height)/8);
-    int pixelWidth = 0;
-    int pixels[8][8];
-    for (int y = 0 ; y < _Height ; y = y+8) {
-      for (int x = pixelWidth; x < (8*ceil(float(_Width)/8)); x = x+8) {
-      ++_count;
+    Chunk<int> _Chunk;
+    _YChunk = new Chunk<int>[numberOfChunks];
+    _CbChunk = new Chunk<int>[numberOfChunks];
+    _CrChunk = new Chunk<int>[numberOfChunks];
+    int Ypixels[8][8];
+    int Cbpixels[8][8];
+    int Crpixels[8][8];
+    int count = 0;
+    for (int y = 0 ; y < (16*ceil(float(_Height)/16)) ; y = y+8) {
+      for (int x = 0; x < (16*ceil(float(_Width)/16)); x = x+8) {
         for(int v = 0;v<8;++v){
            for(int u = 0;u<8;++u){
              int h,k;
@@ -292,16 +315,43 @@ class bitmap {
              if((y+v)>=_Height){
                k=y-_Height;
              }
-             pixels[u][v] = _YCbCrData[(k+v)*_Width + (h+u)].Y;
-             /* std::cout<<u<<"\t"<<v<<"\t"<<pixels[u][v]<<std::endl; */
+             Ypixels[u][v] = _YCbCrData[(k+v)*_Width + (h+u)].Y;
+             Cbpixels[u][v] = _YCbCrData[(k+v)*_Width + (h+u)].Cb;
+             Crpixels[u][v] = _YCbCrData[(k+v)*_Width + (h+u)].Cr;
            }
         }
+        _YChunk[count] = Ypixels;
+        _CbChunk[count] = Cbpixels;
+        _CrChunk[count] = Crpixels;
+        ++count;
       };
     };
-    std::cout<<_count<<std::endl;
-    std::cout<<_Height<<std::endl;
-    std::cout<<_Width<<std::endl;
-    std::cout<<numberOfChunks;
+  };
+
+  void downSample(){
+    int count = 0;
+    /* for (int y = 0 ; y < chunkHeight ; ++y) { */
+    /*   for (int x = 0; x < chunkWidth; ++x) { */
+    /*     for(int v = 0;v<8;++v){ */
+    /*        for(int u = 0;u<8;++u){ */
+    /*          int h,k; */
+    /*          h=x; */
+    /*          k=y; */
+    /*          if((x+u)>=chunkWidth){ */
+    /*            h=x-chunkWidth; */
+    /*          } */
+    /*          if((y+v)>=chunkHeight){ */
+    /*            k=y-chunkHeight; */
+    /*          } */
+    /*        } */
+    /*     } */
+    /*     ++count; */
+    /*   }; */
+    /* }; */
+
+  };
+
+  void toSuperChunks(){
   };
 
 
