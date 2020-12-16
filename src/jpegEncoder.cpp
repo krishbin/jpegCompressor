@@ -461,14 +461,16 @@ public:
 				temp = HuffmanTransformer::encode(dummyCACTable, zeros << 4 | 0x00);
 				writeToFileByteWise(new_file, temp, bitholder);
 			}
+			cout << "C components entropy coded and written in file" << endl;
 		}
-		cout << "C components entropy coded and written in file" << endl;
+		cout << "All entropy data written in file" << endl;
 
 
 		//ff d9 (end of file)
 		result += combineHexChars({ 0xff, 0xd9 });
 		new_file << result;
 		result = "";
+		cout << "All done in file" << endl;
 		new_file.close();
 	}
 };

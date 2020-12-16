@@ -389,6 +389,11 @@ class bitmap {
     SuperChunk* getSChunk(){
       return _SChunk;
     };
+
+    int getNumOfSuperChunks() {
+        return (int)(chunkHeight* chunkWidth / 4.0);
+    }
+
     int getWidth(){
       return int(_Width);
     };
