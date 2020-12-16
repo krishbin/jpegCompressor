@@ -1,9 +1,9 @@
 
 #include<iostream>
-#include"Chunk.cpp"
 #include<string>
 #include<fstream>
 #include"Huffman.h"
+#include"Chunk.cpp"
 
 using namespace std;
 
@@ -156,10 +156,13 @@ class jfifEncoder {
 					}
 				}
 				bitHolder = "";
-				fileHolder << (char)t_int;
+				string toWrite = "";
+				toWrite += static_cast<char>(t_int);
 				if (t_int == 0xff) {
-					fileHolder << (char)(0x00);
+					toWrite += static_cast<char>(0x00);
 				}
+				fileHolder << toWrite;
+
 			}
 		}
 	}
@@ -216,7 +219,7 @@ public:
 		SuperChunk theSuperChunks[]
 	) {
 		fstream new_file;
-		new_file.open(filePathWithoutExtension + ".jpeg", ios::out);
+		new_file.open(filePathWithoutExtension + ".jpg", ios::out);
 		if (!new_file) {
 			cout << "File creation failed (location: writeJPGFile)";
 			return;
