@@ -216,7 +216,7 @@ public:
 		int width, int height,
 		HuffmanTable HuffmanTableYDC, HuffmanTable HuffmanTableCDC,
 		HuffmanTable HuffmanTableYAC, HuffmanTable HuffmanTableCAC,
-		SuperChunk theSuperChunks[]
+		SuperChunk theSuperChunks[], int NumberOfSuperChunks
 	) {
 		fstream new_file;
 		new_file.open(filePathWithoutExtension + ".jpg", ios::out);
@@ -341,7 +341,7 @@ public:
 		int LastDCDifference[3] = { 0,0,0 };
 		string temp = "";
 		string bitholder = "";
-		for (int x = 0; x < *(&theSuperChunks + 1) - theSuperChunks; x++)
+		for (int x = 0; x < NumberOfSuperChunks; x++)
 		{
 			SuperChunk aSuperChunk = theSuperChunks[x];
 			//Encoding the Y component
