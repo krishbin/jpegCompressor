@@ -223,11 +223,12 @@ public:
 		string result = "";
 		//ff d8 (start of file)
 		result += static_cast<char>(0xff) + static_cast<char>(0xd8);
-
+		cout << result << endl;
 		//ff e0 (Tells the application that this is JFIF format)
 		result += combineHexChars({0xff,0xe0});
 		result += combineHexChars({0x0,0x10,0x4a,0x46,0x49,0x46,0x0,0x01,0x01,0x01,0x0,0x60,0x0,0x60,0x0,0x0});
 
+		cout << result << endl;
 		//ff db ... ff db (Quantisation tables)
 		/*
 			ff db [1 byte of information data (AAAA BBBB)
@@ -321,8 +322,11 @@ public:
 		// Spectral start and end (0 and 63), successive approximation (0)
 		result += combineHexChars({ 0x0, 0x0c, 0x03, 0x01, 0x0, 0x02, 0x11, 0x03, 0x11, 0x0, 0x3f, 0x0 });
 
+		cout << result << endl;
 		//I'll write the string to the file here because this scan data can become really long at times
 		new_file << result;
+		cout << "that string should be written in the file now" << endl;
+
 		result = "";
 		//new_file << entropyData;
 
@@ -373,6 +377,7 @@ public:
 				}
 			}
 
+			cout << "Y component entropy coded and written in file" << endl;
 			//Encoding the Cb component
 			int t_dc_mag = 0;
 			int t_dc_bits = 0;
@@ -449,7 +454,7 @@ public:
 				writeToFileByteWise(new_file, temp, bitholder);
 			}
 		}
-
+		cout << "C components entropy coded and written in file" << endl;
 
 
 		//ff d9 (end of file)
