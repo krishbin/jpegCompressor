@@ -14,9 +14,7 @@ using namespace std;
 
 int main(int argc, const char* argv[]) {
   std::cout << "JPEG Compressor" << std::endl;
-  cout << endl;
   string file_path = "../../bmp_images/sample24bit.bmp";
   bitmap file(file_path);
-  RGBcolor c1(1,2,3); 
   return 0;
 }
