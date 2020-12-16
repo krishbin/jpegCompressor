@@ -58,6 +58,8 @@ struct BitmapColorHeader {
 };
 #pragma pack(pop)
 
+class bitmap;
+
 class color {};
 class YCbCrcolor : public color {
  private:
@@ -71,6 +73,7 @@ class YCbCrcolor : public color {
   void getData() {
     std::cout << int(Y) << "\t" << int(Cb) << "\t" << int(Cr) << std::endl;
   };
+  friend class bitmap; 
 };
 
 class BGRcolor : public color {
@@ -119,6 +122,7 @@ YCbCrcolor::YCbCrcolor(uint8_t Y, uint8_t Cb, uint8_t Cr) {
 };
 
 enum colorSpace { BGR, YCbCr };
+
 class bitmap {
  private:
   colorSpace type{BGR};
@@ -198,7 +202,7 @@ class bitmap {
 
     _Width = abs(bmp_info_header.width);
     _Height = abs(bmp_info_header.height);
-    padding = _Width % 4 ? (4 - _Width % 4):0;
+    padding = _Width % 4 ? (4 - _Width % 4) : 0;
 
     file.read((char*)&bmp_color_header, sizeof(BitmapColorHeader));
     // go directly to the pixel data
@@ -211,11 +215,12 @@ class bitmap {
           file.read((char*)&_BGRData[y * (_Width) + x],
                     sizeof(_BGRData[y * (_Width) + x]));
         };
-        //3 channel skip for padding
-        file.seekg(padding*3,file.cur);
+        // 3 channel skip for padding
+        file.seekg(padding * 3, file.cur);
       };
     };
 
+    // support for alpha channel
     if (bmp_info_header.bitCount == 32) {
       Allocate();
     };
@@ -232,21 +237,21 @@ class bitmap {
     bmp_file_header.pixelDataOffset = sizeof(bmp_file_header) +
                                       sizeof(bmp_info_header) +
                                       sizeof(bmp_color_header);
-    bmp_file_header.fileSize = bmp_file_header.pixelDataOffset +
-                               static_cast<uint32_t>((_Width+padding) * _Height * 3);
-    bmp_info_header.colorsTotal = 0;
-    bmp_info_header.colorsImportant = 0;
+    bmp_file_header.fileSize =
+        bmp_file_header.pixelDataOffset +
+        static_cast<uint32_t>((_Width + padding) * _Height * 3);
     file.write((char*)&bmp_file_header, sizeof(bmp_file_header));
     file.write((char*)&bmp_info_header, sizeof(bmp_info_header));
     file.write((char*)&bmp_color_header, sizeof(bmp_color_header));
     for (int y = _Height - 1; y >= 0; --y) {
       for (int x = 0; x < _Width; ++x) {
-        file.write((char*)&_BGRData[y * (_Width + padding) + x],
-                   sizeof(_BGRData[y * (_Width + padding) + x]));
+        file.write((char*)&_BGRData[y * _Width + x],
+                   sizeof(_BGRData[y * _Width + x]));
       };
       if (_Width % 4 != 0) {
-        for (int pad = 0; pad < padding; ++pad) {
-          file.write((char*)0x00, sizeof(0x00));
+        for (int pad = 0; pad < padding*3; ++pad) {
+          uint8_t padData=0x00;
+          file.write((char*)&padData, sizeof(padData));
         }
       }
     };
@@ -263,4 +268,41 @@ class bitmap {
       };
     }
   };
+
+  int roundUP(float x){
+    return int(x)+1;
+  };
+
+  void toChunk(){
+    int _count = 0;
+    int numberOfChunks=ceil(float(_Width)/8)*ceil(float(_Height)/8);
+    int pixelWidth = 0;
+    int pixels[8][8];
+    for (int y = 0 ; y < _Height ; y = y+8) {
+      for (int x = pixelWidth; x < (8*ceil(float(_Width)/8)); x = x+8) {
+      ++_count;
+        for(int v = 0;v<8;++v){
+           for(int u = 0;u<8;++u){
+             int h,k;
+             h=x;
+             k=y;
+             if((x+u)>=_Width){
+               h=x-_Width;
+             }
+             if((y+v)>=_Height){
+               k=y-_Height;
+             }
+             pixels[u][v] = _YCbCrData[(k+v)*_Width + (h+u)].Y;
+             /* std::cout<<u<<"\t"<<v<<"\t"<<pixels[u][v]<<std::endl; */
+           }
+        }
+      };
+    };
+    std::cout<<_count<<std::endl;
+    std::cout<<_Height<<std::endl;
+    std::cout<<_Width<<std::endl;
+    std::cout<<numberOfChunks;
+  };
+
+
 };
