@@ -252,15 +252,21 @@ class bitmap {
           file.seekg(padding * 3, file.cur);
         };
       };
+      std::cout<<"File read and memory for BGR Allocated"<<std::endl;
 
       // support for alpha channel
       if (bmp_info_header.bitCount == 32) {
         Allocate();
       };
 
+      std::cout<<"Conversion to YCbCr Started"<<std::endl;
       convToYCbCr();
+      std::cout<<"Conversion Successfull"<<std::endl;
+      std::cout<<"Pixel are being seperated to 8x8 chunks"<<std::endl;
       toChunk();
+      std::cout<<"Made Chunks"<<std::endl;
       downSample();
+      std::cout<<"Image Downsampled"<<std::endl;
       file.close();
     };
 
@@ -334,7 +340,6 @@ class bitmap {
           _YChunk[count]  = DCTandCompressChunk(Chunk<int>(Ypixels),YquantizationTable);
           _CbChunk[count] = DCTandCompressChunk(Chunk<int>(Cbpixels),CquantizationTable);
           _CrChunk[count] = DCTandCompressChunk(Chunk<int>(Crpixels),CquantizationTable);
-          _CbChunk[count].display();
           ++count;
         };
       };

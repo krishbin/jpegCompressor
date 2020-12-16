@@ -193,8 +193,10 @@ class jfifEncoder {
 		PairOf<char> result;
 		if (item > 65535) item = 65536 % item;
 		if (item < 0) item = 0;
-		result.values[0] = 16 % (int)(item / 256);
-		result.values[1] = 16 % item;
+		/* result.values[0] = 16 % int(item / 256); */
+		/* result.values[1] = 16 % item; */
+    result.values[0] = (int)(item / 256) % 256;
+    result.values[1] = item % 256;
     return result;
 	}
 
@@ -220,6 +222,7 @@ public:
 			return;
 		}
 
+    cout<<"i was here"<<endl;
 		string result = "";
 		//ff d8 (start of file)
 		result += static_cast<char>(0xff) + static_cast<char>(0xd8);
@@ -279,7 +282,9 @@ public:
 		//DC tables
 
 			//separator, length and specification 0x00 (DC baseline))
+    cout<<"i was here"<<endl;
 		PairOf<char> length = intToChars(HuffmanTableYDC.length);
+    cout<<"i was here"<<endl;
 		result += combineHexChars({0xff, 0xc4});
 		result += combineHexChars({length.firstItem(), length.secondItem()});
 		result += combineHexChars({ 0x00 });

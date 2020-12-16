@@ -20,10 +20,6 @@ int main(int argc, const char* argv[]) {
   jfifEncoder jpeg;
   int Width = file.getWidth();
   int Height = file.getHeight();
-  int resolution_w = Width;
-  int resolution_h = Height;
-  /* HuffmanTable dctable[2] = {jpeg.dummyYDCTable,jpeg.dummyCDCTable}; */
-  /* HuffmanTable actable[2] = {jpeg.dummyYACTable,jpeg.dummyCACTable}; */
-  /* jpeg.writeJPGFile("test",YquantizationTable,CquantizationTable,resolution,dctable,actable,file.getSChunk()); */
+  jpeg.writeJPGFile("test",YquantizationTable,CquantizationTable,Width,Height,jpeg.dummyYDCTable,jpeg.dummyCDCTable,jpeg.dummyYACTable,jpeg.dummyCACTable,file.getSChunk());
   return 0;
 }

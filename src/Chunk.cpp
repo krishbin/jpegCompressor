@@ -58,7 +58,7 @@ float alpha(int u) {
   }
 }
 
-static constexpr int entropyEncodingTable[8][8] = {
+const int entropyEncodingTable[8][8] = {
   {0,1,5,6,14,15,27,28},
   {2,4,7,13,16,26,29,42},
   {3,8,12,17,25,30,41,43},
@@ -69,7 +69,7 @@ static constexpr int entropyEncodingTable[8][8] = {
   {35,36,48,49,57,58,62,63}
 };
 
-static constexpr int zigZagIndices[64] =
+const int zigZagIndices[64] =
 {1,2,9,17,10,3,4,11,18,25,33,26,19,12,5,6,13,20,27,34,41,49,42,35,28,21,14,7,8,15,22,29,36,43,50,57,58,51,44,37,30,23,16,24,31,38,45,52,59,60,53,46,39,32,40,47,54,61,62,55,48,56,63,64};
 
 Chunk<int> YquantizationTable = Chunk<int>(YquantizationTableValues50);
@@ -168,6 +168,7 @@ Chunk<int> DCTandCompressChunk(Chunk<int> pixelValues, Chunk<int> weights) {
     {0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0}
   };
+  double eps = 1.0e-10;
   int result[8][8] = {
     {0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0},
@@ -186,7 +187,7 @@ Chunk<int> DCTandCompressChunk(Chunk<int> pixelValues, Chunk<int> weights) {
         }
       }
       DCTresult[k1][k2] *= 0.25 * alpha(k1) * alpha(k2);
-      result[k1][k2] = (int)round(DCTresult[k1][k2] / (weights.pixelValues[k1][k2] * 1.0f));
+      result[k1][k2] = (int)round(DCTresult[k1][k2] / ((weights.pixelValues[k1][k2]+eps) * 1.0f));
     }
   }
 
