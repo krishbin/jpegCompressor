@@ -20,6 +20,6 @@ int main(int argc, const char* argv[]) {
   jfifEncoder jpeg;
   int Width = file.getWidth();
   int Height = file.getHeight();
-  jpeg.writeJPGFile("E:/test",YquantizationTable,CquantizationTable,Width,Height,jpeg.dummyYDCTable,jpeg.dummyCDCTable,jpeg.dummyYACTable,jpeg.dummyCACTable,file.getSChunk(), file.getNumOfSuperChunks());
+  jpeg.writeJPGFile("E:/test",YquantizationTable,CquantizationTable,Width,Height,jpeg.dummyYDCTable,jpeg.dummyCDCTable,jpeg.dummyYACTable,jpeg.dummyCACTable,file.getSChunk(), file.getNumOfSuperChunks(), file.getBGRInfo());
   return 0;
 }

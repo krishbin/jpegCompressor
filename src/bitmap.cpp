@@ -17,6 +17,10 @@
 #include "Chunk.cpp"
 
 #pragma pack(push, 1)
+
+
+
+
 struct BitmapFileHeader {
   uint16_t fileType{0x4D42};  // a two character string to specify DIB file
   uint32_t fileSize{0};       // the total file size
@@ -83,6 +87,15 @@ class BGRcolor : public color {
     BGRcolor();
     BGRcolor(uint8_t, uint8_t, uint8_t);
 
+    uint8_t getRed() {
+        return red;
+    }
+    uint8_t getGreen() {
+        return green;
+    }
+    uint8_t getBlue() {
+        return blue;
+    }
     operator YCbCrcolor() {
       float _Y = 0.299 * red + 0.587 * green + 0.114 * blue;
       float _Cb = -0.1687 * red - 0.3313 * green + 0.5 * blue + 16;
@@ -142,10 +155,11 @@ class bitmap {
     Chunk<int>* _CrChunk;
     Chunk<int>* _DownCrChunk;
     BGRcolor* _BGRData;
+
     YCbCrcolor* _YCbCrData;
 
     void FreeMemory() {
-       std::cout << "I'm inside t FREE MEMORY" << std::endl;
+  
       if (_BGRData) {
         //delete[] _BGRData;
         _BGRData = NULL;
@@ -172,11 +186,9 @@ class bitmap {
       };
     };
     void FreeMemory(colorSpace _type) {
-      std::cout << "I'm inside colourspace free memory" << std::endl;
+
       if (_type == BGR && _BGRData) {
-        std::cout << "before delete[]" << std::endl;
         //delete[] _BGRData;
-        std::cout << "after delete[]" << std::endl;
         _BGRData = NULL;
       };
       if (_type == YCbCr && _YCbCrData) {
@@ -186,7 +198,7 @@ class bitmap {
     };
 
     void Allocate() {
-        std::cout << "I'm inside allocate" << std::endl;
+
       if (type == BGR) {
         if (_BGRData != NULL) {
           FreeMemory(BGR);
@@ -246,11 +258,11 @@ class bitmap {
       // go directly to the pixel data
       file.seekg(bmp_file_header.pixelDataOffset, std::ios::beg);
 
-      std::cout << "Almost reached Allocate" << std::endl;
+
       if (bmp_info_header.bitCount == 24) {
-        std::cout << "Before Allocate" << std::endl;
+
         Allocate();
-        std::cout << "After Allocate" << std::endl;
+
         for (int y = _Height - 1; y >= 0; --y) {
           for (int x = 0; x < _Width; ++x) {
             file.read((char*)&_BGRData[y * (_Width) + x],
@@ -410,4 +422,9 @@ class bitmap {
     int getHeight(){
       return int(_Height);
     };
+
+
+    BGRcolor* getBGRInfo() {
+        return _BGRData;
+    }
 };
