@@ -20,8 +20,6 @@ public:
 	int length;
 	int CodeCounts[16];
 	string CodeValues;
-	int* CodeLengths;
-	int* Codes;
 
 	BitString HCodes[256];
 
@@ -38,39 +36,7 @@ public:
 			CodeCounts[i] = ccounts[i];
 		}
 
-		
-
 		CodeValues = cvalues;
-
-		if (numCodes == -1) {
-			numCodes = CodeValues.length();
-		}
-
-		CodeLengths = new int[numCodes];
-		Codes = new int[numCodes];
-		int index = 1;
-		/*for (int ii = 1; ii <= 16; ii++) {
-			for (int jj = 1; jj <= CodeCounts[ii]; jj++) {
-				CodeLengths[index] = ii;
-				index++;
-
-			}
-		}*/
-
-		int huffmanCodeCounter = 0;
-		int codeLengthCounter = 1;
-
-		for (int i = 0; i < numCodes; i++) {
-			if (CodeLengths[i] == codeLengthCounter) {
-				Codes[i] = huffmanCodeCounter;
-				huffmanCodeCounter++;
-			}
-			else {
-				huffmanCodeCounter <<= 1;
-				codeLengthCounter++;
-			}
-		}
-
 
 		auto huffmanCode = 0;
 		for (auto numBits = 1; numBits <= 16; numBits++)
@@ -95,19 +61,8 @@ public:
 			CodeCounts[i] = 0;
 
 		CodeValues = "";
-		CodeLengths[0] = 0;
-		Codes[0] = 0;
+
 	}
-  ~HuffmanTable(){
-    if(CodeLengths){
-    //delete[] CodeLengths;
-    CodeLengths = NULL;
-    }
-    if(Codes){
-    //delete[] Codes;
-    Codes = NULL;
-    }
-  }
 };
 
 class HuffmanTransformer {

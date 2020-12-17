@@ -15,11 +15,15 @@ using namespace std;
 
 int main(int argc, const char* argv[]) {
   std::cout << "JPEG Compressor" << std::endl;
-  string file_path = "E:/sample1.bmp";
+  cout << endl << "Which image to compress? " << endl;
+  string userInput;
+  cin >> userInput;
+  //string file_path = "E:/JPEG_TESTS/sample.bmp";
+  string file_path = "E:/JPEG_TESTS/" + userInput + ".bmp";
   bitmap file(file_path);
   jfifEncoder jpeg;
   int Width = file.getWidth();
   int Height = file.getHeight();
-  jpeg.writeJPGFile("E:/test",YquantizationTable,CquantizationTable,Width,Height,jpeg.dummyYDCTable,jpeg.dummyCDCTable,jpeg.dummyYACTable,jpeg.dummyCACTable,file.getSChunk(), file.getNumOfSuperChunks(), file.getBGRInfo());
+  jpeg.writeJPGFile("E:/JPEG_TESTS/" + userInput,YquantizationTable,CquantizationTable,Width,Height,jpeg.dummyYDCTable,jpeg.dummyCDCTable,jpeg.dummyYACTable,jpeg.dummyCACTable,file.getSChunk(), file.getNumOfSuperChunks(), file.getBGRInfo());
   return 0;
 }

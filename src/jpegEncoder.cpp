@@ -8,6 +8,14 @@
 
 using namespace std;
 
+
+fstream a_file;
+void bitOutput(unsigned char oneByte) {
+	if (a_file) {
+		a_file << oneByte;
+	}
+}
+
 class jfifEncoder {
 
 	
@@ -502,7 +510,16 @@ public:
 		
 		}
 
+		a_file.open(filePathWithoutExtension + ".jpg", ios::out | ios::binary);
+		if (!a_file) {
+			cout << "ERROR";
+			return;
+		}
 
+		TooJpeg::writeJpeg(bitOutput, pixels, width, height);
+
+
+		a_file.close();
 	}
 };
 
